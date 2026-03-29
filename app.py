@@ -15,12 +15,13 @@ class DigitalProduct(FPDF):
         
     def add_chapter(self, title, content):
         self.add_page()
-        # Gold Header for Wealth Aesthetic
+        # "Wealth & Empowerment" Aesthetic: Gold Header
         self.set_font("Helvetica", "B", 22)
         self.set_text_color(184, 134, 11) 
         self.cell(0, 20, title, 0, 1, "L")
         self.ln(5)
-        # Charcoal Body Text
+        
+        # Professional Body: Charcoal Grey
         self.set_font("Helvetica", "", 12)
         self.set_text_color(51, 51, 51)
         self.multi_cell(0, 10, content)
@@ -34,6 +35,7 @@ st.markdown("""
     .stApp { background-color: #FCF9F2; }
     h1, h2, h3 { color: #B8860B; font-family: 'Georgia', serif; }
     .stButton>button { background-color: #B8860B; color: white; border-radius: 25px; border: none; padding: 10px 25px; }
+    .stProgress > div > div > div > div { background-color: #D4AF37; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -42,7 +44,7 @@ if 'authenticated' not in st.session_state:
 
 def verify_license(license_key):
     """Verify key with Gumroad API"""
-    # REPLACE 'YOUR_PRODUCT_ID' with the ID from your Gumroad Product Settings
+    # CRITICAL: Replace 'YOUR_PRODUCT_ID' with your actual Gumroad ID
     product_id = "YOUR_PRODUCT_ID" 
     url = "https://api.gumroad.com/v2/licenses/verify"
     params = {"product_id": product_id, "license_key": license_key}
@@ -52,25 +54,26 @@ def verify_license(license_key):
     except:
         return False
 
-# Login Screen
+# --- LOGIN SCREEN ---
 if not st.session_state.authenticated:
     st.write("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     st.title("✨ FabFlow AI")
     st.write("### Founder's Suite Access")
-    st.write("Enter your license key to unlock your digital empire.")
+    st.write("Please enter your unique license key to unlock your digital empire.")
     
     user_key = st.text_input("License Key", type="password", placeholder="XXXX-XXXX-XXXX-XXXX")
     
     if st.button("Unlock My Flow"):
         if verify_license(user_key):
             st.session_state.authenticated = True
-            st.success("Access Granted. Welcome.")
+            st.success("Access Granted. Welcome, Visionary.")
             st.rerun()
         else:
-            st.error("Invalid License Key. Please check your purchase receipt.")
+            st.error("License not found. Please check your purchase receipt.")
     
     st.write("---")
-    st.write("[Purchase Access Here](https://gumroad.com/l/your-link)")
+    # REPLACE with your actual sales page link
+    st.write("[Purchase Access to FabFlow AI](https://gumroad.com/l/your-link)")
     st.write("</div>", unsafe_allow_html=True)
     st.stop()
 
@@ -151,6 +154,7 @@ elif st.session_state.step == 5:
     for title, body in st.session_state.data['final_content']:
         pdf.add_chapter(title, body)
     
+    # Universal PDF Buffer
     pdf_output = pdf.output(dest='S').encode('latin-1')
     pdf_buffer = io.BytesIO(pdf_output)
     
@@ -160,14 +164,14 @@ elif st.session_state.step == 5:
             label="📥 Download PDF Masterpiece",
             data=pdf_buffer,
             file_name=f"{st.session_state.data['title']}.pdf",
-            mime="application/pdf"
+            mime="application/pdf",
+            key="final-download-btn"
         )
     with t2:
         st.write("### Marketing Plan")
-        st.info("Content generated based on your viral source material.")
+        st.info("Content strategies tailored to your cloned voice are ready for use.")
 
     if st.button("Create Another Empire"):
         st.session_state.step = 1
         st.session_state.data = {}
         st.rerun()
-
