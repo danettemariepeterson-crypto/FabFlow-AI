@@ -43,16 +43,27 @@ if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
 
 def verify_license(license_key):
-    """Verify key with Gumroad API"""
-    # CRITICAL: Replace 'YOUR_PRODUCT_ID' with your actual Gumroad ID
-    product_id = "ffbjm" 
+    """Verify key with Gumroad API and print debug info"""
+    product_id = "YOUR_PRODUCT_ID" # Ensure this is your actual ID
     url = "https://api.gumroad.com/v2/licenses/verify"
     params = {"product_id": product_id, "license_key": license_key}
+    
     try:
         response = requests.post(url, data=params)
-        return response.json().get("success", False)
-    except:
+        data = response.json()
+        
+        # --- DEBUG SECTION ---
+        # This will show up in your app only when you try to log in
+        if not data.get("success"):
+            st.warning(f"DEBUG INFO: Gumroad says '{data.get('message')}'")
+            st.write("Checking ID:", product_id)
+        # ---------------------
+        
+        return data.get("success", False)
+    except Exception as e:
+        st.error(f"Connection Error: {e}")
         return False
+
 
 # --- LOGIN SCREEN ---
 if not st.session_state.authenticated:
