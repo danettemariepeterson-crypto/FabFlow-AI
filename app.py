@@ -6,33 +6,36 @@ from openai import OpenAI
 from fpdf import FPDF
 import io
 
-# --- 1. PDF CLASS ---
+# --- 1. PDF CLASS (UTF-8, Bougie Font) ---
 class DigitalProduct(FPDF):
     def __init__(self):
         super().__init__()
         self.set_auto_page_break(auto=True, margin=15)
+        self.add_font("DejaVu", "", "DejaVuSans.ttf", uni=True)
         
     def add_chapter(self, title, content):
         self.add_page()
-        # "Wealth & Empowerment" Aesthetic: Gold Header
-        self.set_font("Helvetica", "B", 22)
-        self.set_text_color(184, 134, 11) 
-        self.cell(0, 20, title, 0, 1, "L")
-        self.ln(5)
-        # Professional Body: Charcoal Grey
-        self.set_font("Helvetica", "", 12)
-        self.set_text_color(51, 51, 51)
-        self.multi_cell(0, 10, content)
+        try:
+            self.set_font("DejaVu", "B", 22)
+            self.set_text_color(184, 134, 11)
+            self.multi_cell(0, 10, title)
+            self.ln(5)
+            self.set_font("DejaVu", "", 12)
+            self.set_text_color(51, 51, 51)
+            self.multi_cell(0, 8, content)
+        except Exception as e:
+            st.error(f"Error adding chapter '{title}': {e}")
+            st.error(f"Preview: {content[:100]}...")
 
 # --- 2. LICENSE CHECK ---
 st.set_page_config(page_title="FabFlow AI | Member Access", page_icon="✨", layout="wide")
 st.markdown("""
-    <style>
-    .stApp { background-color: #FCF9F2; }
-    h1, h2, h3 { color: #B8860B; font-family: 'Georgia', serif; }
-    .stButton>button { background-color: #B8860B; color: white; border-radius: 25px; border: none; padding: 10px 25px; }
-    .stProgress > div > div > div > div { background-color: #D4AF37; }
-    </style>
+<style>
+.stApp { background-color: #FCF9F2; }
+h1, h2, h3 { color: #B8860B; font-family: 'Georgia', serif; }
+.stButton>button { background-color: #B8860B; color: white; border-radius: 25px; border: none; padding: 10px 25px; }
+.stProgress > div > div > div > div { background-color: #D4AF37; }
+</style>
 """, unsafe_allow_html=True)
 
 if 'authenticated' not in st.session_state:
@@ -79,20 +82,18 @@ if 'data' not in st.session_state:
 st.write("<div style='text-align: center;'><h1>FabFlow AI</h1><p>The Mastermind Suite for Digital Creators.</p></div>", unsafe_allow_html=True)
 st.progress(st.session_state.step / 5)
 
-# STEP 1: STYLE CAPTURE
+# STEP 1: SKIP SAMPLE, AUTO VOICE
 if st.session_state.step == 1:
-    st.subheader("Step 1: Capture Your Essence")
-    sample = st.text_area("Paste a writing sample to guide style:", height=200)
+    st.subheader("Step 1: Style & Vibe (Auto-generated)")
+    st.info("We are automatically writing your product in a bougie, fabulous Black Auntie voice. No sample needed.")
     if st.button("Continue to Research"):
-        if sample:
-            st.session_state.data['voice'] = sample
-            st.session_state.step = 2
-            st.rerun()
+        st.session_state.step = 2
+        st.rerun()
 
 # STEP 2: RESEARCH MATERIAL
 elif st.session_state.step == 2:
     st.subheader("Step 2: Model Viral Success")
-    m_source = st.text_area("Paste Viral Script / Source Material")
+    m_source = st.text_area("Paste Viral Script / Source Material (optional)")
     col1, col2 = st.columns([1, 5])
     if col1.button("Back"): 
         st.session_state.step = 1
@@ -117,11 +118,10 @@ elif st.session_state.step == 3:
         st.session_state.step = 4
         st.rerun()
 
-# STEP 4: SYNTHESIS
+# STEP 4: SYNTHESIS (Bougie Auntie Style)
 elif st.session_state.step == 4:
     st.subheader("Step 4: Synthesis in Progress")
-    with st.spinner("Our AI artisans are weaving your style into your product..."):
-        voice = st.session_state.data['voice']
+    with st.spinner("Our AI artisans are weaving your product..."):
         topic = st.session_state.data['title']
         full_content = []
         for chap in st.session_state.data['outline'].split('\n'):
@@ -130,8 +130,8 @@ elif st.session_state.step == 4:
                     res = client.chat.completions.create(
                         model="gpt-4o-mini",
                         messages=[
-                            {"role": "system", "content": f"Write in the style of this sample: {voice}"},
-                            {"role": "user", "content": f"Write a high-value chapter for '{chap}' for '{topic}'."}
+                            {"role": "system", "content": "Write in a confident, bougie, fabulous Black Auntie style (think Jenifer Lewis). Make it viral-worthy, empowering, and rich in personality."},
+                            {"role": "user", "content": f"Write a high-value chapter for '{chap}' for the topic '{topic}'."}
                         ]
                     )
                     full_content.append((chap, res.choices[0].message.content))
@@ -151,7 +151,7 @@ elif st.session_state.step == 5:
     for title, body in st.session_state.data['final_content']:
         pdf.add_chapter(title, body)
     
-    pdf_output = pdf.output(dest='S').encode('latin-1')
+    pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
     pdf_buffer = io.BytesIO(pdf_output)
     
     t1, t2 = st.tabs(["📄 Download Product", "📱 Marketing Strategy"])
@@ -165,7 +165,7 @@ elif st.session_state.step == 5:
         )
     with t2:
         st.write("### Marketing Plan")
-        st.info("Content strategies tailored to your writing style are ready for use.")
+        st.info("Content strategies tailored to your bougie Auntie voice are ready for use.")
 
     if st.button("Create Another Empire"):
         st.session_state.step = 1
