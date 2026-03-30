@@ -44,7 +44,7 @@ if 'authenticated' not in st.session_state:
 
 def verify_license(license_key):
     """Verify key with Gumroad API and print debug info"""
-    product_id ="ffbjm" # Ensure this is your actual ID
+    product_id = "ffbjm" # Ensure this is your actual ID
     url = "https://api.gumroad.com/v2/licenses/verify"
     params = {"product_id": product_id, "license_key": license_key}
     
